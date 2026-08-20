@@ -1,56 +1,82 @@
 #!/usr/bin/env python3
+"""One-shot Figma document snapshot. Quota-protected.
+
+Free-tier PATs are severely rate-limited. This script is designed to be
+run ONCE per file, ever. All downstream work is offline against the cache.
+
+Usage:  FIGMA_PAT=... FIGMA_FILE_KEY=... python ops/figma-snapshot.py
+        (add --force ONLY with a written reason; it spends a request)
 """
-ONE Figma API call. Caches the full document JSON to intake/figma-api/file.json.
+import argparse, hashlib, json, os, sys, datetime, urllib.request, urllib.error
 
-  export FIGMA_TOKEN=figd_xxx
-  python3 ops/figma-snapshot.py <FILE_KEY>
+CACHE_DIR = ".figma-cache"
+LEDGER = os.path.join(CACHE_DIR, "QUOTA_LEDGER.md")
 
-QUOTA: free Starter allows ~6 reads/month/file. This script makes exactly ONE
-request and refuses to overwrite an existing snapshot without --force.
-NEVER retry a 429 in a loop.
-"""
-import json, os, pathlib, sys
-import requests
+def die(msg, code=1):
+    print(f"[snapshot] FATAL: {msg}", file=sys.stderr); sys.exit(code)
 
-OUT = pathlib.Path("intake/figma-api/file.json")
-force = "--force" in sys.argv
-args = [a for a in sys.argv[1:] if not a.startswith("--")]
+def log_call(file_key, reason, status, sha):
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    new = not os.path.exists(LEDGER)
+    with open(LEDGER, "a", encoding="utf-8") as f:
+        if new:
+            f.write("# Figma API Quota Ledger\n\n"
+                    "Every request ever made against the Figma API. Append-only.\n\n"
+                    "| UTC timestamp | file key | reason | status | cache sha256 |\n"
+                    "|---|---|---|---|---|\n")
+        ts = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+        f.write(f"| {ts} | `{file_key[:8]}…` | {reason} | {status} | `{sha[:12] if sha else '-'}` |\n")
 
-if not args:
-    sys.exit("usage: figma-snapshot.py <FILE_KEY> [--force]")
-key = args[0]
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--force", action="store_true", help="spend a request even if cached")
+    ap.add_argument("--reason", default="initial snapshot")
+    args = ap.parse_args()
 
-token = os.environ.get("FIGMA_TOKEN")
-if not token:
-    sys.exit("FIGMA_TOKEN not set. Do not hardcode it.")
+    pat = os.environ.get("FIGMA_PAT")
+    key = os.environ.get("FIGMA_FILE_KEY")
+    if not pat: die("FIGMA_PAT not set. Load the iris bot profile env, not your shell default.")
+    if not key: die("FIGMA_FILE_KEY not set.")
 
-if OUT.exists() and not force:
-    sys.exit(f"{OUT} exists. Snapshot is cached — use it. Pass --force to spend quota.")
+    out = os.path.join(CACHE_DIR, f"{key}.raw.json")
+    if os.path.exists(out) and not args.force:
+        print(f"[snapshot] Cache already present at {out} — NO request made.")
+        print("[snapshot] This is the correct outcome. Run figma-flow-extract.py next.")
+        return
 
-print("Making exactly ONE request to the Figma API...")
-r = requests.get(
-    f"https://api.figma.com/v1/files/{key}",
-    headers={"X-Figma-Token": token},
-    timeout=90,
-)
+    if args.force:
+        print("[snapshot] --force given. This WILL consume free-tier quota.")
+        if input("[snapshot] Type SPEND to continue: ").strip() != "SPEND":
+            die("aborted by operator", 2)
 
-if r.status_code == 429:
-    sys.exit("429 rate limited. DO NOT RETRY — quota is monthly. Wait or upgrade the plan.")
-if r.status_code == 403:
-    sys.exit("403 forbidden. Token lacks access, or scope is wrong. "
-             "Try duplicating the file to your own drafts.")
-if r.status_code != 200:
-    sys.exit(f"HTTP {r.status_code}: {r.text[:400]}")
+    req = urllib.request.Request(
+        f"https://api.figma.com/v1/files/{key}?geometry=paths",
+        headers={"X-Figma-Token": pat, "User-Agent": "hermes-crew-snapshot/4.0"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=120) as r:
+            raw = r.read()
+    except urllib.error.HTTPError as e:
+        log_call(key, args.reason, f"HTTP {e.code}", None)
+        die(f"HTTP {e.code} — {e.read()[:400]!r}. Ledger updated; quota may still have been consumed.")
+    except urllib.error.URLError as e:
+        log_call(key, args.reason, "network-error", None)
+        die(f"network error: {e.reason}")
 
-OUT.parent.mkdir(parents=True, exist_ok=True)
-OUT.write_text(json.dumps(r.json(), indent=2))
+    doc = json.loads(raw)
+    if "document" not in doc:
+        log_call(key, args.reason, "malformed", None)
+        die("response has no 'document' key — refusing to cache a bad snapshot")
 
-doc = r.json()
-mb = OUT.stat().st_size / 1e6
-print(f"Saved {OUT} ({mb:.1f} MB)")
-print(f"  name:       {doc.get('name')}")
-print(f"  modified:   {doc.get('lastModified')}")
-print(f"  pages:      {len(doc.get('document', {}).get('children', []))}")
-print(f"  styles:     {len(doc.get('styles', {}))}")
-print(f"  components: {len(doc.get('components', {}))}")
-print("\nCOMMIT THIS FILE. Bots read it offline. Do not call the API again.")
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    with open(out, "wb") as f:
+        f.write(raw)
+    sha = hashlib.sha256(raw).hexdigest()
+    log_call(key, args.reason, "200 OK", sha)
+
+    print(f"[snapshot] Cached {len(raw):,} bytes -> {out}")
+    print(f"[snapshot] sha256 {sha}")
+    print("[snapshot] COMMIT THIS FILE. It is now a read-only fixture for all agents.")
+
+if __name__ == "__main__":
+    main()

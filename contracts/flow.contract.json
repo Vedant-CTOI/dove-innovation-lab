@@ -1,0 +1,15 @@
+{
+  "$schema": "flow.contract.v1",
+  "source": {
+    "figmaFileKey": "REDACTED",
+    "cacheSha256": "filled by figma-flow-extract.py",
+    "extractedAt": "2026-08-20T00:00:00Z",
+    "signedOffBy": null
+  },
+  "screens": [],
+  "globalStates": {
+    "offline": { "requiredOnAllRealtimeScreens": true },
+    "reduced-motion": { "requiredEverywhere": true }
+  },
+  "_note": "This is a placeholder. Run ops/figma-flow-extract.py to generate the draft, then review, sign off (set signedOffBy), and commit. Once signed, this file is IMMUTABLE — changes require flow-change: commit prefix."
+}

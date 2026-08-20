@@ -2,4 +2,7 @@ node_modules/
 dist/
 .env
 .env.*
-intake/figma-api/.token*
+.figma-cache/.token*
+*.pyc
+__pycache__/
+reports/screenshots/

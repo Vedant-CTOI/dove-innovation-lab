@@ -1,47 +1,74 @@
-# AGENTS.md — project rules for all bots
+# AGENTS.md — project rules for all bots (v4: Generative Visual Design)
 
 ## Non-negotiables
-1. Contracts in /contracts/ are the source of truth. Read before writing. Never
-   implement against a DRAFT contract. Never silently diverge from a FROZEN one.
+1. Contracts in /contracts/ are the source of truth. Two types:
+   - flow.contract.json — IMMUTABLE behavioural contract (human-only writes)
+   - visual.contract.json — Iris-owned evolvable visual contract
 2. Stay inside your write-fence. Need a change outside it? Request via @atlas.
 3. Secrets from env vars only. Never in code, never in a commit, never in chat.
 4. Small commits, conventional messages, scope prefix: feat(api):, fix(web):.
 5. Report honestly. "I could not verify X" beats implying you did.
 
+## Write-fences (v4)
+
+| Path | Owner | Others |
+|---|---|---|
+| `.figma-cache/**` | **human only** | read-only, no network calls |
+| `contracts/flow.contract.json` | **human only** (`flow-change:` commits) | read-only |
+| `contracts/visual.contract.json` | Iris | read-only |
+| `contracts/visual-bar.md` | human authors; Argus appends scores | read-only |
+| `contracts/DESIGN_RATIONALE.md` | Iris | read-only |
+| `packages/ui/**`, `assets/**` | Iris | Forge may import, never restyle |
+| `apps/web/**` | Forge | — |
+| `apps/web/flow.manifest.json` | Forge | Argus + CI read |
+| `apps/api/**` | Relay | — |
+| `infra/**`, `render.yaml` | Helm | — |
+| secrets, `.env.*` | Vault | never printed, never committed |
+| `reports/**` | Argus | — |
+
 ## FIGMA QUOTA RULE — applies to every bot
-intake/figma-api/file.json is a CACHED snapshot from ONE API call. Free-plan files
-allow only a handful of reads per MONTH.
+`.figma-cache/*.raw.json` is a CACHED snapshot from ONE API call.
 - NO BOT CALLS THE FIGMA API. Not once. Not to check. Not to refresh.
 - Only a human runs ops/figma-snapshot.py.
 - A 429 is never retried. The quota is monthly, not per-minute.
-- Only @iris interprets the snapshot. Only @iris holds a Figma credential.
+- Only @iris holds a Figma credential. Iris does NOT use it for API calls —
+  the PAT exists for provenance and emergencies only.
 
-## Design provenance rule
-Every token in tokens.json is tagged NAMED | EXTRACTED | STATED | DERIVED |
-INFERRED | ASSUMED.
-- Never present an ASSUMED value as fact, in code, docs or chat.
-- Never "improve" a token outside @iris's fence. Report it instead.
-- NAMED tokens use the designer's own vocabulary. Do not rename them.
+## Flow contract rule
+- flow.contract.json is IMMUTABLE once signed (signedOffBy is set).
+- Changes require a `flow-change:` commit prefix and invalidate Argus's last
+  passing score.
+- No agent writes this file. Ever.
+- Forge maintains apps/web/flow.manifest.json as the implementation mirror.
+- ops/flow-parity.py is the CI gate: code vs contract.
+
+## Visual contract rule
+- visual.contract.json is Iris-owned and evolvable.
+- Forge may NOT introduce a colour, spacing, radius, shadow or duration literal
+  that isn't resolved from here. Enforced by ESLint.
+- Token changes are versioned bumps with a DESIGN_RATIONALE.md entry.
+- Iris does not compose screens. Forge does not restyle primitives.
+  If Forge needs a value that doesn't exist as a token, that is an Iris ticket.
+
+## Visual quality rule
+- contracts/visual-bar.md is the enforceable rubric.
+- Argus scores each clause 0/1/2. Merge gate: ≥90%, zero BLOCKING zeros.
+- Argus's authority is absolute on visual merges and it may not write code.
+- Fonts must be self-hosted and licence-cleared. No Google Fonts CDN in
+  production. Vault records the licence per family.
 
 ## Stack (amendable only by @atlas)
-Frontend  React 18 + TS + Vite, Socket.io-client, tokens.css
+Frontend  React 18 + TS + Vite, Socket.io-client, tokens from visual.contract.json
 Backend   Node 20 + Express + socket.io + zod, single long-lived process
 Data      Supabase Postgres, RLS on all user tables
 Host      Render.com Web Service, health check /healthz
-Repo      npm workspaces monorepo
-
-## Reference material rules
-intake/figma-api/file.json → Design source of truth. @iris interprets, offline.
-intake/figma/*.png         → Visual cross-check only. JSON wins on values.
-intake/vercel-examples/    → Mine for logic, validation, data access. Do NOT copy
-                             serverless handler shapes; our runtime is persistent.
-intake/architecture/       → Intent, not gospel. Conflicts with Render/Socket.io
-                             reality go to @atlas.
-DESIGN-FACTS.md            → Human ground truth for semantics and interaction.
+Repo      npm workspaces monorepo (apps/web, apps/api, packages/ui)
 
 ## Definition of done
-- Matches the FROZEN contract
-- Handles loading, empty, error, offline states
+- flow-parity.py exits 0
+- Matches the FROZEN visual contract (no raw literals)
+- Handles loading, empty, error, offline states (per flow contract)
 - Inputs validated at the boundary
 - No secrets in the diff
-- @argus verified it with an actual test run
+- @argus scored ≥90% on visual-bar.md with zero BLOCKING zeros
+- LCP ≤2.0s, INP ≤200ms, CLS ≤0.02
