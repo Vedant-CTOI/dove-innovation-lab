@@ -54,7 +54,7 @@ def main():
         headers={"X-Figma-Token": pat, "User-Agent": "hermes-crew-snapshot/4.0"},
     )
     try:
-        with urllib.request.urlopen(req, timeout=120) as r:
+        with urllib.request.urlopen(req, timeout=600) as r:
             raw = r.read()
     except urllib.error.HTTPError as e:
         log_call(key, args.reason, f"HTTP {e.code}", None)
