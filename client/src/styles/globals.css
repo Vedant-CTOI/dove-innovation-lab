@@ -7,6 +7,10 @@
 @import "./fonts.css";
 @import "tailwindcss";
 
+/* Tailwind v4 custom theme variants — .theme-dark / .theme-light class selectors */
+@custom-variant theme-dark (&:where(.theme-dark, .theme-dark *));
+@custom-variant theme-light (&:where(.theme-light, .theme-light *));
+
 /* ── Tailwind v4 Theme — brand tokens → utility classes ─────── */
 @theme {
   /* Colors → bg-*, text-*, border-*, etc. */

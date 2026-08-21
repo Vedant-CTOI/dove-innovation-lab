@@ -30,38 +30,56 @@ export function QRCard({
   subtitle = "Point your camera at the code",
   className = "",
 }: QRCardProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const prefersReduced = useReducedMotion();
 
-  // Draw a branded QR code on canvas (brand colors, not default black/white)
+  // Generate a real QR code using qr-code-styling
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    let qr: { append: (el: HTMLElement) => void } | null = null;
 
-    // Use a lightweight QR drawing — we render the QR matrix manually
-    // For production, qr-code-styling library would draw here
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    // Dynamic import so missing package doesn't crash the app
+    import("qr-code-styling")
+      .then(({ default: QRCodeStyling }) => {
+        if (!containerRef.current) return;
+        // Clear any previous QR
+        containerRef.current.innerHTML = "";
+        qr = new QRCodeStyling({
+          width: 200,
+          height: 200,
+          type: "svg",
+          data: value,
+          qrOptions: {
+            errorCorrectionLevel: "M",
+          },
+          dotsOptions: {
+            color: "#F08810",
+            type: "dots",
+          },
+          backgroundOptions: {
+            color: "#0A0F14",
+          },
+          cornersSquareOptions: {
+            color: "#FCBC00",
+            type: "extra-rounded",
+          },
+          cornersDotOptions: {
+            color: "#FCBC00",
+            type: "dot",
+          },
+        });
+        qr.append(containerRef.current);
+      })
+      .catch(() => {
+        // Fallback: draw a placeholder if qr-code-styling not available
+        if (!containerRef.current) return;
+        containerRef.current.innerHTML =
+          '<div style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;background:#0A0F14;color:#FCBC00;font-family:sans-serif;font-size:12px;text-align:center;padding:1rem">QR unavailable</div>';
+      });
 
-    // We'll use the QRCodeStyling if available, otherwise draw a placeholder
-    // that still looks branded. The actual QR generation happens in lib/.
-    // For now, draw a branded frame background
-    const size = 240;
-    canvas.width = size;
-    canvas.height = size;
-    ctx.fillStyle = "#0A0F14";
-    ctx.fillRect(0, 0, size, size);
-
-    // Pulp glow center
-    const gradient = ctx.createRadialGradient(
-      size / 2, size / 2, 0,
-      size / 2, size / 2, size / 2,
-    );
-    gradient.addColorStop(0, "rgba(252, 188, 0, 0.08)");
-    gradient.addColorStop(1, "rgba(252, 188, 0, 0)");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, size, size);
-  }, []);
+    return () => {
+      if (containerRef.current) containerRef.current.innerHTML = "";
+    };
+  }, [value]);
 
   return (
     <motion.div
@@ -93,12 +111,7 @@ export function QRCard({
           className="bg-night rounded-[var(--radius-md)] p-3 relative"
           style={{ borderRadius: "calc(var(--radius-lg) - var(--radius-gap))" }}
         >
-          <canvas
-            ref={canvasRef}
-            className="block"
-            style={{ width: 200, height: 200 }}
-            data-qr-value={value}
-          />
+          <div ref={containerRef} className="block" style={{ width: 200, height: 200 }} />
           {/* Brand corner marks — orange accents on QR corners */}
           <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-pulp-gold rounded-tl-sm" />
           <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-pulp-gold rounded-tr-sm" />

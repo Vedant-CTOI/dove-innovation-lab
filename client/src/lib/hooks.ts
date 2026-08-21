@@ -42,7 +42,7 @@ import {
   editIdea as apiEditIdea,
   getRoomState as apiGetRoomState,
 } from "./api";
-import { queryKeys, getVisitorId } from "./constants";
+import { queryKeys, getVisitorId, getModeratorToken } from "./constants";
 import { ApiError } from "./query";
 import type {
   ConnectionState,
@@ -290,6 +290,10 @@ export function useStatus(code: string | null): UseStatusResult {
   // Try to get initial status from room state (moderator only)
   useEffect(() => {
     if (!code) return;
+    // Only call moderator endpoint if a moderator token is available.
+    // Non-moderator pages rely on socket events for status updates.
+    const token = getModeratorToken();
+    if (!token) return;
 
     // Try REST room state first (works if moderator token set)
     const controller = new AbortController();
@@ -587,7 +591,7 @@ export function useTicker(code: string | null): UseTickerResult {
     if (!code) return;
     const controller = new AbortController();
     apiGetTicker(code, controller.signal)
-      .then((res) => setTickerItems(res.items))
+      .then((res) => setTickerItems(res.ticker))
       .catch(() => {});
 
     return () => controller.abort();

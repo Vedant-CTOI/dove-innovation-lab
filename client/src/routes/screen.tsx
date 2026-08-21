@@ -88,7 +88,7 @@ export function BigScreen() {
             <ScreenHeader status={status} code={code ?? ""} />
             <ErrorState
               title="Couldn't load ideas"
-              message="The orchard is暂时 unreachable. Try again?"
+              message="The orchard is temporarily unreachable. Try again?"
               onRetry={() => refetch()}
             />
           </div>

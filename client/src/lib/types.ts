@@ -251,7 +251,7 @@ export interface ResultsResponse {
 }
 
 export interface TickerResponse {
-  items: TickerEntry[];
+  ticker: TickerEntry[];
 }
 
 export interface SubmitIdeaResponse {

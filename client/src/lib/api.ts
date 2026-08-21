@@ -156,7 +156,7 @@ export function requestCoach(payload: {
   return request<CoachResponse>("POST", "/api/coach", { body: payload });
 }
 
-/* GET /api/ticker?code=XXX → { items: TickerEntry[] } */
+/* GET /api/ticker?code=XXX → { ticker: TickerEntry[] } */
 export function getTicker(code: string, signal?: AbortSignal): Promise<TickerResponse> {
   return request<TickerResponse>("GET", `/api/ticker?code=${encodeURIComponent(code)}`, {
     signal,
