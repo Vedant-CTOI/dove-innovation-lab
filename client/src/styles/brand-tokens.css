@@ -1,0 +1,138 @@
+/* ──────────────────────────────────────────────────────────
+   brand-tokens.css — Minute Maid Pulpy Orange (India)
+   Pixel-measured from Coca-Cola India DAM assets. Do not edit
+   these values — they are the source of truth for the brand.
+   ────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── 13 Brand Colors ────────────────────────────────────── */
+  --color-pulpy-orange: #f08810;  /* PRIMARY — the juice */
+  --color-orange-deep:  #dc8800;  /* gradient end */
+  --color-orange-dark:  #c46a00;  /* text-safe orange on light */
+  --color-orange-light: #f8a820;  /* hero splash highlight */
+  --color-pulp-gold:    #fcbc00;  /* ACCENT — pulp bits / burst rays */
+  --color-pulp-light:   #ffe08a;  /* soft highlight */
+  --color-cream:        #f8e0a8;  /* BACKGROUND (light) */
+  --color-label-sky:    #0094dc;  /* SECONDARY — label field */
+  --color-sky-deep:     #005cb8;  /* wordmark outline */
+  --color-berry-red:    #c40000;  /* accent — wordmark */
+  --color-leaf-green:   #008040;  /* foliage accent */
+  --color-ink:          #101820;  /* logo container / dark surface */
+  --color-night:        #0a0f14;  /* deep cinematic bg */
+
+  /* ── 3 Signature Gradients ──────────────────────────────── */
+  --gradient-mm-juice: linear-gradient(
+    160deg,
+    var(--color-pulp-gold) 0%,
+    var(--color-pulpy-orange) 48%,
+    var(--color-orange-dark) 100%
+  );
+  --gradient-mm-pulp: radial-gradient(
+    circle at 50% 60%,
+    var(--color-pulp-light) 0%,
+    var(--color-pulp-gold) 35%,
+    var(--color-pulpy-orange) 70%,
+    var(--color-orange-deep) 100%
+  );
+  --gradient-mm-night: linear-gradient(
+    180deg,
+    #16202b 0%,
+    var(--color-night) 100%
+  );
+
+  /* ── Easing ──────────────────────────────────────────────── */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring-out: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring-in:  cubic-bezier(0.64, -0.56, 0.34, 1.56);
+  --ease-juice:      cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ── Layered Shadows (≥3 stops each) ─────────────────────── */
+  /* Light surface shadows — warm-tinted, multi-stop */
+  --shadow-card-light:
+    0 1px 2px rgba(196, 106, 0, 0.08),
+    0 4px 8px rgba(240, 136, 16, 0.10),
+    0 12px 24px rgba(196, 106, 0, 0.06),
+    0 24px 48px rgba(16, 24, 32, 0.04);
+
+  --shadow-button-light:
+    0 1px 2px rgba(196, 106, 0, 0.20),
+    0 4px 10px rgba(240, 136, 16, 0.25),
+    0 8px 20px rgba(220, 136, 0, 0.15);
+
+  /* Dark / night surface shadows — glow-tinged */
+  --shadow-card-dark:
+    0 0 0 1px rgba(252, 188, 0, 0.06),
+    0 4px 12px rgba(0, 0, 0, 0.40),
+    0 16px 32px rgba(0, 0, 0, 0.50),
+    0 32px 64px rgba(0, 0, 0, 0.30);
+
+  --shadow-button-dark:
+    0 0 0 1px rgba(252, 188, 0, 0.12),
+    0 4px 12px rgba(240, 136, 16, 0.30),
+    0 8px 24px rgba(220, 136, 0, 0.20),
+    0 16px 40px rgba(0, 0, 0, 0.40);
+
+  /* Pulp-burst glow — used behind focal elements */
+  --shadow-pulp-glow:
+    0 0 20px rgba(252, 188, 0, 0.30),
+    0 0 40px rgba(240, 136, 16, 0.20),
+    0 0 80px rgba(252, 188, 0, 0.10);
+
+  /* ── Nested Radii (outer − gap) ──────────────────────────── */
+  /* Parent always has a larger radius than children by the gap */
+  --radius-xs:   6px;
+  --radius-sm:   10px;
+  --radius-md:   14px;
+  --radius-lg:   20px;
+  --radius-xl:   28px;
+  --radius-2xl:  36px;
+  --radius-pill: 9999px;
+
+  /* Standard gap for nested radii: parent = child + 4px */
+  --radius-gap: 4px;
+
+  /* ── Typography Scale ────────────────────────────────────── */
+  --font-display: "Baloo 2", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, sans-serif;
+  --font-accent: "Fredoka", system-ui, sans-serif;
+
+  /* ── Z-index scale ───────────────────────────────────────── */
+  --z-canvas:   0;
+  --z-content:  10;
+  --z-card:     20;
+  --z-overlay:  30;
+  --z-toast:    40;
+  --z-modal:    50;
+
+  /* ── Motion durations ───────────────────────────────────── */
+  --duration-fast:   150ms;
+  --duration-base:   300ms;
+  --duration-slow:   500ms;
+  --duration-burst:  800ms;
+}
+
+/* ── Dark theme (big-screen / night) ─────────────────────── */
+.theme-dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* ── Light theme (participant / branded) ─────────────────── */
+.theme-light,
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* ── Reduced motion: durations → 0, opacity-only crossfade ─ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast:   0ms;
+    --duration-base:   0ms;
+    --duration-slow:   0ms;
+    --duration-burst:  0ms;
+    --ease-bounce:     linear;
+    --ease-spring-out: linear;
+    --ease-spring-in:  linear;
+    --ease-juice:      linear;
+  }
+}

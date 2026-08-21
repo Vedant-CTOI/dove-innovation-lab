@@ -18,4 +18,5 @@ services:
         sync: false
       - key: MODERATOR_KEY
         generateValue: true
-    # No Figma credentials needed. This is a standalone workshop platform.
+    # Same-origin single-service: Express serves client/dist + SPA fallback + Socket.IO.
+    # No CORS config needed. PORT is auto-injected by Render — do not set it here.

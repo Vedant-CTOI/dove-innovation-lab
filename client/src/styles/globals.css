@@ -1,0 +1,200 @@
+/* ═══════════════════════════════════════════════════════════
+   globals.css — Minute Maid Pulpy Orange Workshop
+   Tailwind v4 theme, base styles, brand utilities
+   ═══════════════════════════════════════════════════════════ */
+
+@import "./brand-tokens.css";
+@import "./fonts.css";
+@import "tailwindcss";
+
+/* ── Tailwind v4 Theme — brand tokens → utility classes ─────── */
+@theme {
+  /* Colors → bg-*, text-*, border-*, etc. */
+  --color-pulpy-orange: var(--color-pulpy-orange);
+  --color-orange-deep:  var(--color-orange-deep);
+  --color-orange-dark:  var(--color-orange-dark);
+  --color-orange-light: var(--color-orange-light);
+  --color-pulp-gold:    var(--color-pulp-gold);
+  --color-pulp-light:   var(--color-pulp-light);
+  --color-cream:       var(--color-cream);
+  --color-label-sky:   var(--color-label-sky);
+  --color-sky-deep:    var(--color-sky-deep);
+  --color-berry-red:   var(--color-berry-red);
+  --color-leaf-green:  var(--color-leaf-green);
+  --color-ink:         var(--color-ink);
+  --color-night:       var(--color-night);
+
+  /* Fonts → font-display, font-body, font-accent */
+  --font-display: var(--font-display);
+  --font-body:     var(--font-body);
+  --font-accent:   var(--font-accent);
+  --font-sans:     var(--font-body);
+
+  /* Easing → ease-bounce, ease-spring-out, etc. */
+  --ease-bounce:     var(--ease-bounce);
+  --ease-spring-out: var(--ease-spring-out);
+  --ease-spring-in:  var(--ease-spring-in);
+  --ease-juice:      var(--ease-juice);
+
+  /* Shadows → shadow-card-light, shadow-card-dark, etc. */
+  --shadow-card-light:    var(--shadow-card-light);
+  --shadow-button-light: var(--shadow-button-light);
+  --shadow-card-dark:    var(--shadow-card-dark);
+  --shadow-button-dark:  var(--shadow-button-dark);
+  --shadow-pulp-glow:    var(--shadow-pulp-glow);
+
+  /* Radii → rounded-xs, rounded-sm, etc. */
+  --radius-xs:   var(--radius-xs);
+  --radius-sm:   var(--radius-sm);
+  --radius-md:   var(--radius-md);
+  --radius-lg:   var(--radius-lg);
+  --radius-xl:   var(--radius-xl);
+  --radius-2xl:  var(--radius-2xl);
+  --radius-pill: var(--radius-pill);
+}
+
+/* ── Base styles ───────────────────────────────────────────── */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .theme-dark body,
+  [data-theme="dark"] body {
+    background-color: var(--color-night);
+    background-image: var(--gradient-mm-night);
+    color: var(--color-cream);
+  }
+
+  /* Focus-visible — designed, both themes */
+  :focus-visible {
+    outline: 3px solid var(--color-pulp-gold);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  .theme-dark :focus-visible,
+  [data-theme="dark"] :focus-visible {
+    outline-color: var(--color-pulp-light);
+  }
+
+  /* Selection */
+  ::selection {
+    background: var(--color-pulpy-orange);
+    color: var(--color-ink);
+  }
+
+  /* Scrollbar — branded */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-orange-deep);
+    border-radius: var(--radius-pill);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-pulpy-orange);
+    background-clip: padding-box;
+  }
+}
+
+/* ── Brand Utilities ────────────────────────────────────────── */
+@layer utilities {
+  /* Gradient text — juice gradient on any text */
+  .text-juice-gradient {
+    background: var(--gradient-mm-juice);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* Gradient backgrounds */
+  .bg-juice-gradient { background: var(--gradient-mm-juice); }
+  .bg-pulp-gradient  { background: var(--gradient-mm-pulp); }
+  .bg-night-gradient { background: var(--gradient-mm-night); }
+
+  /* Glass morphism — cards over canvas backdrop */
+  .glass {
+    background: rgba(248, 224, 168, 0.06);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    border: 1px solid rgba(252, 188, 0, 0.12);
+  }
+
+  .theme-light .glass,
+  [data-theme="light"] .glass {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(12px) saturate(1.2);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    border: 1px solid rgba(255, 224, 138, 0.40);
+  }
+
+  /* Noise overlay texture — for dark surfaces */
+  .noise-overlay {
+    position: relative;
+  }
+  .noise-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.04;
+    mix-blend-mode: overlay;
+    background-image: url("/img/noise-texture.svg");
+    background-size: 256px 256px;
+    background-repeat: repeat;
+    border-radius: inherit;
+    z-index: 1;
+  }
+
+  /* Pulp glow — behind focal elements */
+  .pulp-glow {
+    box-shadow: var(--shadow-pulp-glow);
+  }
+
+  /* Spring motion helpers */
+  .motion-bounce {
+    transition-timing-function: var(--ease-bounce);
+    transition-duration: var(--duration-base);
+  }
+
+  /* Nested radius helper — child radius = parent - gap */
+  .radius-nested {
+    border-radius: calc(var(--radius-lg) - var(--radius-gap));
+  }
+
+  /* No-select for interactive surfaces */
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/* ── Reduced motion override ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

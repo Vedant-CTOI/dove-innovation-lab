@@ -1,0 +1,171 @@
+name: Deploy Check
+
+on:
+  push:
+    paths:
+      - 'infra/render.yaml'
+      - 'render.yaml'
+      - '.github/workflows/deploy-check.yml'
+  pull_request:
+    paths:
+      - 'infra/render.yaml'
+      - 'render.yaml'
+      - '.github/workflows/deploy-check.yml'
+
+jobs:
+  validate-blueprint:
+    name: Validate render.yaml Blueprint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyYAML
+        run: pip install pyyaml --quiet
+
+      - name: Validate render.yaml schema
+        run: |
+          python - <<'PYEOF'
+          import yaml, sys, os
+
+          blueprint_path = None
+          for candidate in ("render.yaml", "infra/render.yaml"):
+              if os.path.isfile(candidate):
+                  blueprint_path = candidate
+                  break
+
+          if not blueprint_path:
+              print("ERROR: render.yaml not found at repo root or infra/")
+              sys.exit(1)
+
+          print(f"Validating: {blueprint_path}")
+
+          with open(blueprint_path) as f:
+              try:
+                  data = yaml.safe_load(f)
+              except yaml.YAMLError as e:
+                  print(f"ERROR: Invalid YAML: {e}")
+                  sys.exit(1)
+
+          errors = []
+
+          # --- Top-level structure ---
+          if not isinstance(data, dict):
+              errors.append("Top-level must be a mapping (got %s)" % type(data).__name__)
+              _bail(errors)
+
+          if "services" not in data:
+              errors.append("Missing required key: 'services'")
+              _bail(errors)
+
+          services = data["services"]
+          if not isinstance(services, list) or len(services) == 0:
+              errors.append("'services' must be a non-empty list")
+              _bail(errors)
+
+          # --- We expect exactly one service (single-service topology) ---
+          if len(services) != 1:
+              errors.append(
+                  "Expected exactly 1 service (single-service topology), got %d" % len(services)
+              )
+
+          svc = services[0]
+
+          # --- Required fields for this project ---
+          required_fields = {
+              "type": "web",
+              "runtime": "node",
+              "plan": "starter",
+              "buildCommand": "npm install && npm run build",
+              "startCommand": "npm start",
+              "healthCheckPath": "/api/health",
+              "numInstances": 1,
+          }
+
+          for field, expected in required_fields.items():
+              actual = svc.get(field)
+              if actual is None:
+                  errors.append("Missing required field: '%s'" % field)
+              elif actual != expected:
+                  errors.append(
+                      "Field '%s': expected %r, got %r" % (field, expected, actual)
+                  )
+
+          # --- Env vars ---
+          env_vars = svc.get("envVars", [])
+          if not isinstance(env_vars, list):
+              errors.append("'envVars' must be a list")
+          else:
+              env_map = {}
+              for ev in env_vars:
+                  if not isinstance(ev, dict) or "key" not in ev:
+                      errors.append("Each envVar must be a mapping with a 'key'")
+                      continue
+                  env_map[ev["key"]] = ev
+
+              # NODE_VERSION
+              nv = env_map.get("NODE_VERSION")
+              if not nv or nv.get("value") != "20":
+                  errors.append("envVar NODE_VERSION must have value '20'")
+
+              # NODE_ENV
+              ne = env_map.get("NODE_ENV")
+              if not ne or ne.get("value") != "production":
+                  errors.append("envVar NODE_ENV must have value 'production'")
+
+              # GEMINI_API_KEY — sync: false (secret, not synced from repo)
+              gk = env_map.get("GEMINI_API_KEY")
+              if not gk:
+                  errors.append("Missing envVar: GEMINI_API_KEY (sync: false)")
+              elif gk.get("sync") is not False:
+                  errors.append("envVar GEMINI_API_KEY must have sync: false")
+
+              # MODERATOR_KEY — generateValue: true
+              mk = env_map.get("MODERATOR_KEY")
+              if not mk:
+                  errors.append("Missing envVar: MODERATOR_KEY (generateValue: true)")
+              elif mk.get("generateValue") is not True:
+                  errors.append("envVar MODERATOR_KEY must have generateValue: true")
+
+              # PORT must NOT be in the blueprint — Render injects it automatically
+              if "PORT" in env_map:
+                  errors.append(
+                      "envVar PORT must not be set in blueprint (Render auto-injects it)"
+                  )
+
+              # No envVar should carry a literal secret value
+              for ev in env_vars:
+                  if isinstance(ev, dict) and "value" in ev and ev.get("key") not in (
+                      "NODE_VERSION", "NODE_ENV"
+                  ):
+                      errors.append(
+                          "envVar '%s' has a literal 'value' — secrets must use "
+                          "sync: false or generateValue: true, not hardcoded values"
+                          % ev.get("key", "?")
+                      )
+
+          def _bail(errs):
+              if errs:
+                  print("\n".join("  FAIL: " + e for e in errs))
+                  sys.exit(1)
+
+          if errors:
+              print("Blueprint validation failed:")
+              for e in errors:
+                  print("  FAIL: " + e)
+              sys.exit(1)
+
+          print("All blueprint checks passed:")
+          print("  - type=web, runtime=node, plan=starter")
+          print("  - healthCheckPath=/api/health, numInstances=1")
+          print("  - buildCommand + startCommand correct")
+          print("  - NODE_VERSION=20, NODE_ENV=production")
+          print("  - GEMINI_API_KEY sync=false, MODERATOR_KEY generateValue=true")
+          print("  - No literal secrets in blueprint")
+          print("  - Single-service topology (1 service)")
+          PYEOF

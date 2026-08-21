@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" fill="none">
+  <!-- Orange slice — empty state illustration -->
+  <circle cx="100" cy="80" r="60" fill="#F08810" opacity="0.15"/>
+  <circle cx="100" cy="80" r="48" fill="none" stroke="#F08810" stroke-width="3" stroke-dasharray="6 4"/>
+  <!-- Segments -->
+  <g stroke="#C46A00" stroke-width="2.5" fill="none" opacity="0.6">
+    <path d="M100 80 L100 32"/>
+    <path d="M100 80 L141.6 56"/>
+    <path d="M100 80 L141.6 104"/>
+    <path d="M100 80 L100 128"/>
+    <path d="M100 80 L58.4 104"/>
+    <path d="M100 80 L58.4 56"/>
+  </g>
+  <!-- Pulp bits -->
+  <circle cx="100" cy="60" r="3" fill="#FCBC00"/>
+  <circle cx="115" cy="75" r="2.5" fill="#FCBC00"/>
+  <circle cx="90" cy="95" r="2.5" fill="#FCBC00"/>
+  <circle cx="110" cy="95" r="2" fill="#FFE08A"/>
+  <circle cx="85" cy="70" r="2" fill="#FFE08A"/>
+  <!-- Sparkle -->
+  <path d="M150 40 L152 46 L158 48 L152 50 L150 56 L148 50 L142 48 L148 46 Z" fill="#FCBC00"/>
+  <path d="M50 110 L51 114 L55 115 L51 116 L50 120 L49 116 L45 115 L49 114 Z" fill="#F08810"/>
+</svg>
