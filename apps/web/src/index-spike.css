@@ -1,0 +1,70 @@
+.index-spike {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rem;
+  padding: 2rem;
+  background: #f5f2ee;
+  color: #1a1a1a;
+  font-family: -apple-system, system-ui, sans-serif;
+}
+
+.index-spike__header {
+  text-align: center;
+}
+.index-spike__eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8a8580;
+  margin-bottom: 0.5rem;
+}
+.index-spike__title {
+  font-size: clamp(2rem, 6vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+.index-spike__sub {
+  font-size: 1rem;
+  color: #5a5550;
+  max-width: 36ch;
+  margin: 0 auto;
+}
+
+.index-spike__nav {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.index-spike__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 2.5rem 3rem;
+  min-width: 14rem;
+  border-radius: 14px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  transition: transform 220ms cubic-bezier(0.2, 0, 0, 1), box-shadow 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+.index-spike__link span {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+}
+.index-spike__link--telegraph { background: #d4502a; color: #fff6ec; }
+.index-spike__link--terminal  { background: #0d2818; color: #4af2a3; }
+.index-spike__link--risograph { background: #3b3b95; color: #ffd9d2; }
+.index-spike__link:hover { transform: translateY(-3px); }
+
+.index-spike__footer {
+  font-size: 0.8rem;
+  color: #8a8580;
+}

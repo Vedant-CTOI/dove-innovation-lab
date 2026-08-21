@@ -1,25 +1,21 @@
 # infra/render.yaml
 services:
   - type: web
-    name: realtime-app
+    name: minutemaid-workshop
     runtime: node
-    plan: starter          # NOT free: spin-down severs WebSocket connections
+    plan: starter
     region: oregon
-    buildCommand: npm ci && npm run build --workspaces
-    startCommand: node apps/api/dist/server.js
-    healthCheckPath: /healthz
-    numInstances: 1        # >1 requires the Socket.io Redis adapter
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    numInstances: 1
     envVars:
       - key: NODE_VERSION
         value: "20"
       - key: NODE_ENV
         value: production
-      - key: SUPABASE_URL
+      - key: GEMINI_API_KEY
         sync: false
-      - key: SUPABASE_ANON_KEY
-        sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
-      - key: JWT_SECRET
+      - key: MODERATOR_KEY
         generateValue: true
-    # No Figma credential here. Extraction happens at design time, not runtime.
+    # No Figma credentials needed. This is a standalone workshop platform.

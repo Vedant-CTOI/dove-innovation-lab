@@ -2,7 +2,7 @@ node_modules/
 dist/
 .env
 .env.*
-.figma-cache/.token*
 *.pyc
 __pycache__/
-reports/screenshots/
+shots/
+!shots/.gitkeep

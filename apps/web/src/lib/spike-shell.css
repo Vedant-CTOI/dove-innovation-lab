@@ -1,0 +1,25 @@
+/* SpikeShell — shared chrome for all three directions */
+.spike-shell { min-height: 100vh; }
+.spike-shell__bar {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  font-family: ui-monospace, monospace;
+  backdrop-filter: blur(8px);
+}
+.spike-shell__group { display: flex; gap: 0.25rem; align-items: center; }
+.spike-shell__label { opacity: 0.5; margin-right: 0.25rem; }
+.spike-shell__btn {
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 140ms ease, background 140ms ease;
+}
+.spike-shell__btn:hover { color: #fff; }
+.spike-shell__btn.is-active { background: rgba(255, 255, 255, 0.15); color: #fff; }
+.spike-shell__dot { width: 10px; height: 10px; border-radius: 50%; margin-left: auto; }
+.spike-shell__content { min-height: calc(100vh - 2.5rem); }
