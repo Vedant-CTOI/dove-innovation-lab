@@ -52,7 +52,8 @@ setupSocket(io, store);
 // Production: serve the built client (SPA fallback)
 // ---------------------------------------------------------------------------
 
-const clientDist = path.resolve(__dirname, "..", "client", "dist");
+// From server/dist/, go up two levels to repo root, then into client/dist.
+const clientDist = path.resolve(__dirname, "..", "..", "client", "dist");
 
 if (isProduction && fs.existsSync(clientDist)) {
   app.use(express.static(clientDist));
